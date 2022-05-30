@@ -1,16 +1,24 @@
-import React from "react"
-import styled from "styled-components"
-import { Spacing, BorderRadius, FontWeight } from "shared/styles/styles"
-import { Images } from "assets/images"
-import { Colors } from "shared/styles/colors"
-import { Person, PersonHelper } from "shared/models/person"
-import { RollStateSwitcher } from "staff-app/components/roll-state/roll-state-switcher.component"
+import React from "react";
+import styled from "styled-components";
+import { Spacing, BorderRadius, FontWeight } from "shared/styles/styles";
+import { Images } from "assets/images";
+import { Colors } from "shared/styles/colors";
+import { Person, PersonHelper } from "shared/models/person";
+import { RollStateSwitcher } from "staff-app/components/roll-state/roll-state-switcher.component";
+import { RolllStateType } from "shared/models/roll";
 
 interface Props {
-  isRollMode?: boolean
-  student: Person
+  isRollMode?: boolean;
+  student: Person;
+  rollState: RolllStateType;
+  onRollStateChange: (personId: number, rollState: RolllStateType) => void;
 }
-export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
+export const StudentListTile: React.FC<Props> = ({
+  isRollMode,
+  student,
+  onRollStateChange,
+  rollState,
+}) => {
   return (
     <S.Container>
       <S.Avatar url={Images.avatar}></S.Avatar>
@@ -19,12 +27,17 @@ export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
       </S.Content>
       {isRollMode && (
         <S.Roll>
-          <RollStateSwitcher />
+          <RollStateSwitcher
+            initialState={rollState}
+            onStateChange={(rollState) =>
+              onRollStateChange(student.id, rollState)
+            }
+          />
         </S.Roll>
       )}
     </S.Container>
-  )
-}
+  );
+};
 
 const S = {
   Container: styled.div`
@@ -61,4 +74,4 @@ const S = {
     align-items: center;
     margin-right: ${Spacing.u4};
   `,
-}
+};

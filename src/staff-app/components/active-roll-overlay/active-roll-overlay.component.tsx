@@ -5,17 +5,16 @@ import { BorderRadius, Spacing } from "shared/styles/styles";
 import { RollStateList } from "staff-app/components/roll-state/roll-state-list.component";
 import { RollStateCategorized, RollStateFilter } from "shared/models/roll";
 
-export type ActiveRollAction = "filter" | "exit";
+export type ActiveRollAction = "filter" | "exit" | "save";
 
 interface Props {
   isActive: boolean;
   onItemClick: (action: ActiveRollAction, value?: string) => void;
-  onRollStateClick: (filterBy: RollStateFilter) => void;
   rollState?: RollStateCategorized;
 }
 
 export const ActiveRollOverlay: React.FC<Props> = (props) => {
-  const { isActive, onItemClick, rollState, onRollStateClick } = props;
+  const { isActive, onItemClick, rollState } = props;
 
   return (
     <S.Overlay isActive={isActive}>
@@ -23,7 +22,7 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
         <div>Class Attendance</div>
         <div>
           <RollStateList
-            onItemClick={onRollStateClick}
+            onItemClick={(type) => onItemClick("filter", type)}
             stateList={[
               { type: "all", count: rollState?.all ?? 0 },
               { type: "present", count: rollState?.present ?? 0 },
@@ -38,7 +37,7 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
             <Button
               color="inherit"
               style={{ marginLeft: Spacing.u2 }}
-              onClick={() => onItemClick("exit")}
+              onClick={() => onItemClick("save")}
             >
               Complete
             </Button>

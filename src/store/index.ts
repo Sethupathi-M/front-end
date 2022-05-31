@@ -1,11 +1,9 @@
 import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
 import rollStateSlice from "store/reducer/rollState.reducer";
-import studentStateSlice from "./reducer/students.reducer";
 
 const store = configureStore({
   reducer: {
     rollState: rollStateSlice,
-    students: studentStateSlice,
   },
 });
 

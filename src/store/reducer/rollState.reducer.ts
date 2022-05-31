@@ -26,13 +26,4 @@ export const rollStateSlice = createSlice({
 
 export const { changeStudentRollstate } = rollStateSlice.actions;
 
-debugger;
 export default rollStateSlice.reducer;
-
-export const filterByRollState =
-  (rollState: string): AppThunk =>
-  (dispatch, getState) => {
-    const state = getState();
-
-    console.log({ rollState });
-  };

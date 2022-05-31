@@ -20,10 +20,13 @@ import {
   ActiveRollAction,
 } from "staff-app/components/active-roll-overlay/active-roll-overlay.component";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { RollStateCategorized, RolllStateType } from "shared/models/roll";
+import {
+  RollStateCategorized,
+  RolllStateType,
+  RollInput,
+} from "shared/models/roll";
 import { useAppDispatch, useAppSelector } from "store/hooks";
 import { changeStudentRollstate } from "store/reducer/rollState.reducer";
-import { setStudents } from "store/reducer/students.reducer";
 
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false);
@@ -31,6 +34,9 @@ export const HomeBoardPage: React.FC = () => {
     url: "get-homeboard-students",
   });
 
+  const [saveRoll] = useApi<{ students: Person[] }>({
+    url: "save-roll",
+  });
   useEffect(() => {
     void getStudents();
   }, [getStudents]);
@@ -48,40 +54,46 @@ export const HomeBoardPage: React.FC = () => {
     );
   };
 
-  useEffect(() => {
-    if (data && data.students.length > 0) {
-      dispatch(setStudents({ students: data.students }));
+  const onActiveRollAction = (action: ActiveRollAction, value?: string) => {
+    if (action === "filter" && value) setFilterBy(value);
+    if (action === "save") {
+      const payload: RollInput = {
+        student_roll_states: Object.entries(rollstateMap).map(
+          ([id, rollState]) => ({
+            student_id: Number(id),
+            roll_state: rollState,
+          })
+        ),
+      };
+      void saveRoll(payload);
+      setIsRollMode(false);
     }
-  }, [data]);
-
-  const onOverallRollStateClick = (filterBy: string) => setFilterBy(filterBy);
+    if (action === "exit") {
+      setIsRollMode(false);
+    }
+  };
   const students = useMemo(() => {
     let studentsTemp = [...(data?.students || [])];
-    if (sortMode === "asc") {
+    if (sortMode === "asc")
       studentsTemp?.sort((a, b) => a.first_name.localeCompare(b.first_name));
-    }
-    if (sortMode === "desc") {
+    if (sortMode === "desc")
       studentsTemp?.sort((a, b) => b.first_name.localeCompare(a.first_name));
-    }
-    if (searchString) {
+    if (searchString)
       studentsTemp = studentsTemp?.filter((person) =>
         person.first_name.toLowerCase().includes(searchString)
       );
-    }
-    if (filterBy !== "all") {
+    if (filterBy !== "all")
       studentsTemp = studentsTemp?.filter(
         (student) => rollstateMap[student.id] === filterBy
       );
-    }
     return studentsTemp;
-  }, [data, sortMode, searchString, filterBy, onOverallRollStateClick]);
+  }, [data, sortMode, searchString, filterBy, onActiveRollAction]);
 
   const rollStatusMap = useMemo(() => {
     const map: RollStateCategorized = {};
-    map["all"] = students?.length || 0;
-
+    map["all"] = data?.students?.length || 0;
     let rolledStudents = 0;
-    for (const [key, value] of Object.entries(rollstateMap)) {
+    for (const value of Object.values(rollstateMap)) {
       map[value] = map[value] ? Number(map[value]) + 1 : 1;
       rolledStudents++;
     }
@@ -93,19 +105,8 @@ export const HomeBoardPage: React.FC = () => {
   }, [rollstateMap]);
 
   const onToolbarAction = (action: ToolbarAction, value?: SortMode) => {
-    if (action === "roll") {
-      setIsRollMode(true);
-    }
-
-    if (action === "sort") {
-      setSortMode(value ? value : "normal");
-    }
-  };
-
-  const onActiveRollAction = (action: ActiveRollAction) => {
-    if (action === "exit") {
-      setIsRollMode(false);
-    }
+    if (action === "roll") setIsRollMode(true);
+    if (action === "sort") setSortMode(value ? value : "normal");
   };
 
   return (
@@ -143,7 +144,6 @@ export const HomeBoardPage: React.FC = () => {
         )}
       </S.PageContainer>
       <ActiveRollOverlay
-        onRollStateClick={onOverallRollStateClick}
         isActive={isRollMode}
         onItemClick={onActiveRollAction}
         rollState={rollStatusMap}
